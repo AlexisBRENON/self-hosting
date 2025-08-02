@@ -1,0 +1,31 @@
+services:
+  octoprint:
+    image: octoprint/octoprint
+    container_name: octoprint
+    restart: no
+    ports:
+      - 8031:80
+    devices:
+      # use `python -m serial.tools.miniterm` to see what the name is of the printer, this requires pyserial
+      - ${PRINTER_DEVICE}:/dev/ttyUSB0
+      - ${VIDEO_DEVICE}:/dev/video0
+    volumes:
+      - octoprint:/octoprint
+    environment:
+      - ENABLE_MJPG_STREAMER=true
+    labels:
+      - "traefik.http.middlewares.octoprint_add_trailing_slash.redirectRegex.regex=^(https?://[^/]+/[a-z0-9_-]+)$$"
+      - "traefik.http.middlewares.octoprint_add_trailing_slash.redirectRegex.replacement=$${1}/"
+      - "traefik.http.middlewares.octoprint_add_trailing_slash.redirectRegex.permanent=false"
+      - "traefik.http.middlewares.octoprint_headers.headers.customrequestheaders.X-Script-Name=/octoprint"
+      - "traefik.http.middlewares.octoprint_stripprefix.stripPrefix.prefixes=/octoprint"
+      - "traefik.http.routers.octoprint.middlewares=octoprint_add_trailing_slash,octoprint_headers,octoprint_stripprefix"
+    networks:
+      - self_hosting
+
+volumes:
+  octoprint:
+
+networks:
+  self_hosting:
+    external: true
