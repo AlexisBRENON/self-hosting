@@ -1,0 +1,26 @@
+http:
+  services:
+    status:
+      loadBalancer:
+        servers:
+          - url: "http://status:9090/"
+
+  middlewares:
+    docker_trigger:
+      forwardauth:
+        address: "http://trigger:9090/"
+        trustForwardHeader: true
+
+    forwarded_headers_status:
+      headers:
+        customRequestHeaders:
+          X-Forwarded-Uri: "/trigger-status"
+
+  routers:
+    status:
+      rule: PathPrefix(`/`)
+      service: status
+      priority: 2
+      middlewares:
+        - docker_trigger
+        - forwarded_headers_status

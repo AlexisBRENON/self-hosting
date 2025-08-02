@@ -1,0 +1,44 @@
+services:
+  traefik:
+    image: traefik:v2.11
+    container_name: traefik
+    command:
+      - --configFile=/etc/traefik/traefik.yml
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./:/etc/traefik/:ro
+    restart: always
+    labels:
+      - "traefik.enable=false"
+    networks:
+      - default
+      - self_hosting
+
+  trigger:
+    build:
+      context: ./trigger
+    container_name: trigger
+    volumes:
+      - ../:/stacks/
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: always
+    labels:
+      - "traefik.enable=false"
+
+  status:
+    build:
+      context: ./trigger
+    container_name: status
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: always
+    labels:
+      - "traefik.enable=false"
+
+networks:
+  default: {}
+  self_hosting:
+    name: self_hosting

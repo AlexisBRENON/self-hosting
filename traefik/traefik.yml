@@ -1,0 +1,25 @@
+log:
+  level: INFO
+accessLog:
+  format: json
+  filters:
+    statusCodes:
+      - "400-600"
+  fields:
+    headers:
+      defaultMode: keep
+
+api:
+  insecure: true
+
+entryPoints:
+  web:
+    address: ":80"
+
+providers:
+  file:
+    filename: /etc/traefik/dynamic.yml
+    watch: true
+  docker:
+    network: self_hosting
+    defaultRule: PathPrefix(`/{{ normalize .ContainerName }}`)
